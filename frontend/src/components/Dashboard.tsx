@@ -17,7 +17,6 @@ import {
   MessageSquare,
   TrendingUp,
   TrendingDown,
-  Minus,
   BarChart3,
 } from "lucide-react";
 import { ReviewRow, AspectSentimentData, TrendData, KeywordData } from "../types";
@@ -29,7 +28,6 @@ interface Props {
 const SENTIMENT_COLORS = {
   POSITIF: "#10b981",
   NEGATIF: "#ef4444",
-  NETRAL: "#f59e0b",
 };
 
 const ASPECT_LABELS: Record<string, string> = {
@@ -131,23 +129,20 @@ export function Dashboard({ rows }: Props) {
   const total = analyzed.length;
   const positif = analyzed.filter((r) => r.result!.sentimen === "POSITIF").length;
   const negatif = analyzed.filter((r) => r.result!.sentimen === "NEGATIF").length;
-  const netral = analyzed.filter((r) => r.result!.sentimen === "NETRAL").length;
   const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
 
   const pieData = [
     { name: "Positif", value: positif, color: SENTIMENT_COLORS.POSITIF },
     { name: "Negatif", value: negatif, color: SENTIMENT_COLORS.NEGATIF },
-    { name: "Netral", value: netral, color: SENTIMENT_COLORS.NETRAL },
   ].filter((d) => d.value > 0);
 
   // Aspect data
   const aspectMap: Record<string, AspectSentimentData> = {};
   analyzed.forEach((r) => {
     r.result!.aspek.forEach((a) => {
-      if (!aspectMap[a]) aspectMap[a] = { aspect: ASPECT_LABELS[a] ?? a, positif: 0, negatif: 0, netral: 0 };
+      if (!aspectMap[a]) aspectMap[a] = { aspect: ASPECT_LABELS[a] ?? a, positif: 0, negatif: 0 };
       if (r.result!.sentimen === "POSITIF") aspectMap[a].positif++;
       else if (r.result!.sentimen === "NEGATIF") aspectMap[a].negatif++;
-      else aspectMap[a].netral++;
     });
   });
   const aspectData = Object.values(aspectMap).filter((a) => a.aspect !== "Lainnya");
@@ -156,13 +151,12 @@ export function Dashboard({ rows }: Props) {
   const hasDates = analyzed.some((r) => r.tanggal);
   let trendData: TrendData[] = [];
   if (hasDates) {
-    const dateMap: Record<string, { positif: number; negatif: number; netral: number }> = {};
+    const dateMap: Record<string, { positif: number; negatif: number }> = {};
     analyzed.forEach((r) => {
       const d = r.tanggal ?? "Unknown";
-      if (!dateMap[d]) dateMap[d] = { positif: 0, negatif: 0, netral: 0 };
+      if (!dateMap[d]) dateMap[d] = { positif: 0, negatif: 0 };
       if (r.result!.sentimen === "POSITIF") dateMap[d].positif++;
       else if (r.result!.sentimen === "NEGATIF") dateMap[d].negatif++;
-      else dateMap[d].netral++;
     });
     trendData = Object.entries(dateMap)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -174,7 +168,7 @@ export function Dashboard({ rows }: Props) {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Total Ulasan"
           value={total}
@@ -195,13 +189,6 @@ export function Dashboard({ rows }: Props) {
           sub={`${negatif} ulasan`}
           icon={<TrendingDown className="w-5 h-5 text-red-500" />}
           color="text-red-500"
-        />
-        <StatCard
-          label="Netral"
-          value={`${pct(netral)}%`}
-          sub={`${netral} ulasan`}
-          icon={<Minus className="w-5 h-5 text-amber-500" />}
-          color="text-amber-500"
         />
       </div>
 
@@ -253,7 +240,6 @@ export function Dashboard({ rows }: Props) {
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="positif" name="Positif" fill={SENTIMENT_COLORS.POSITIF} radius={[3, 3, 0, 0]} />
                 <Bar dataKey="negatif" name="Negatif" fill={SENTIMENT_COLORS.NEGATIF} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="netral" name="Netral" fill={SENTIMENT_COLORS.NETRAL} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -277,7 +263,6 @@ export function Dashboard({ rows }: Props) {
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
               <Line type="monotone" dataKey="positif" name="Positif" stroke={SENTIMENT_COLORS.POSITIF} strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="negatif" name="Negatif" stroke={SENTIMENT_COLORS.NEGATIF} strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="netral" name="Netral" stroke={SENTIMENT_COLORS.NETRAL} strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

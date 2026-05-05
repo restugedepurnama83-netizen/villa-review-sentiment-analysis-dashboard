@@ -58,16 +58,12 @@ export function ManualAnalysis({ onResult, onError }: Props) {
   const scoreColor =
     result?.sentimen === "POSITIF"
       ? "text-emerald-600"
-      : result?.sentimen === "NEGATIF"
-      ? "text-red-500"
-      : "text-amber-500";
+      : "text-red-500";
 
   const scoreBarColor =
     result?.sentimen === "POSITIF"
       ? "bg-emerald-500"
-      : result?.sentimen === "NEGATIF"
-      ? "bg-red-500"
-      : "bg-amber-400";
+      : "bg-red-500";
 
   return (
     <div className="space-y-6">
@@ -113,9 +109,7 @@ export function ManualAnalysis({ onResult, onError }: Props) {
             className={`px-6 py-4 border-b ${
               result.sentimen === "POSITIF"
                 ? "bg-emerald-50 border-emerald-100"
-                : result.sentimen === "NEGATIF"
-                ? "bg-red-50 border-red-100"
-                : "bg-amber-50 border-amber-100"
+                : "bg-red-50 border-red-100"
             }`}
           >
             <div className="flex items-center justify-between">

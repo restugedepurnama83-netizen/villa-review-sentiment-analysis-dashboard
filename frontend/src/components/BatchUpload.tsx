@@ -11,7 +11,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
-import { analyzeSentiment } from "../api";
+import { analyzeSentimentBatch } from "../api";
 import { ReviewRow } from "../types";
 import { SentimentBadge } from "./SentimentBadge";
 
@@ -96,24 +96,30 @@ export function BatchUpload({ onBatchComplete, onToast }: Props) {
     if (!rows.length) return;
     setLoading(true);
     setProgress(0);
-    const updated = [...rows];
-    for (let i = 0; i < updated.length; i++) {
-      try {
-        const res = await analyzeSentiment(updated[i].ulasan);
-        updated[i] = { ...updated[i], result: res, error: undefined };
-      } catch (e) {
-        updated[i] = {
-          ...updated[i],
-          error: e instanceof Error ? e.message : "Error",
-        };
-      }
-      setProgress(Math.round(((i + 1) / updated.length) * 100));
-      setRows([...updated]);
+
+    try {
+      const reviews = rows.map((r) => r.ulasan);
+      setProgress(10);
+
+      const results = await analyzeSentimentBatch(reviews);
+      setProgress(90);
+
+      const updated = rows.map((r, i) => ({
+        ...r,
+        result: results[i],
+        error: undefined,
+      }));
+
+      setRows(updated);
+      setProgress(100);
+      onBatchComplete(updated);
+      onToast("success", `Analisis selesai: ${results.length} ulasan berhasil dianalisis`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Gagal menganalisis batch";
+      onToast("error", msg);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    const completed = updated.filter((r) => r.result);
-    onBatchComplete(completed);
-    onToast("success", `Analisis selesai: ${completed.length} ulasan berhasil dianalisis`);
   };
 
   const exportCSV = () => {
