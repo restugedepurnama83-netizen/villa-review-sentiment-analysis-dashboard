@@ -19,6 +19,9 @@ app = FastAPI(title="Villa Sentiment API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Load model & tokenizer saat startup
@@ -46,6 +49,12 @@ class SentimentResponse(BaseModel):
     skor: int
     aspek: list[str]
     alasan: str
+
+class BatchReviewRequest(BaseModel):
+    reviews: list[str]
+
+class BatchSentimentResponse(BaseModel):
+    results: list[SentimentResponse]
 
 
 # Preprocessing
@@ -117,6 +126,48 @@ async def predict(request: ReviewRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal memproses ulasan: {str(e)}")
+
+
+# Endpoint prediksi batch
+@app.post("/predict-batch", response_model=BatchSentimentResponse)
+async def predict_batch(request: BatchReviewRequest):
+    if not request.reviews:
+        raise HTTPException(status_code=400, detail="Field 'reviews' tidak boleh kosong")
+
+    try:
+        original_texts = [r for r in request.reviews if r.strip()]
+        if not original_texts:
+            raise HTTPException(status_code=400, detail="Semua ulasan kosong")
+
+        # Preprocess & tokenize semua ulasan sekaligus
+        cleaned   = [preprocess(text) for text in original_texts]
+        sequences = tokenizer.texts_to_sequences(cleaned)
+        padded    = pad_sequences(sequences, maxlen=MAX_LEN, padding="post", truncating="post")
+
+        # Prediksi batch dalam 1 kali inference
+        predictions = model.predict(padded, verbose=0)
+
+        results = []
+        for i, text in enumerate(original_texts):
+            if predictions.shape[1] == 1:
+                score_raw = float(predictions[i][0])
+                class_idx = 1 if score_raw >= 0.5 else 0
+                skor      = int(round(score_raw * 100)) if class_idx == 1 else int(round((1 - score_raw) * 100))
+            else:
+                class_idx = int(np.argmax(predictions[i]))
+                skor      = int(round(float(np.max(predictions[i])) * 100))
+
+            sentimen = LABELS[class_idx]
+            aspek    = detect_aspek(text)
+            alasan   = generate_alasan(sentimen, skor, aspek)
+            results.append(SentimentResponse(sentimen=sentimen, skor=skor, aspek=aspek, alasan=alasan))
+
+        return BatchSentimentResponse(results=results)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal memproses batch: {str(e)}")
 
 
 # Health check
