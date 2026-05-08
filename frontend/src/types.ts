@@ -36,9 +36,3 @@ export interface TrendData {
   positif: number;
   negatif: number;
 }
-
-export interface KeywordData {
-  word: string;
-  count: number;
-  sentiment: "positif" | "negatif";
-}

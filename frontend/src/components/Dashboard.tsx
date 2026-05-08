@@ -19,7 +19,7 @@ import {
   TrendingDown,
   BarChart3,
 } from "lucide-react";
-import { ReviewRow, AspectSentimentData, TrendData, KeywordData } from "../types";
+import { ReviewRow, AspectSentimentData, TrendData } from "../types";
 
 interface Props {
   rows: ReviewRow[];
@@ -69,47 +69,7 @@ function StatCard({
   );
 }
 
-function computeKeywords(rows: ReviewRow[]): { positive: KeywordData[]; negative: KeywordData[] } {
-  const stopwords = new Set([
-    "yang", "dan", "di", "ke", "dari", "ini", "itu", "dengan", "untuk", "pada",
-    "ada", "tidak", "saya", "kami", "nya", "juga", "sudah", "sangat", "bisa",
-    "atau", "lebih", "karena", "kalau", "tapi", "jadi", "aja", "banget", "sih",
-    "ya", "lah", "deh", "nih", "dong", "mah", "kali", "lagi", "udah", "mau",
-    "buat", "sama", "kita", "akan", "baru", "saat", "setelah", "sebelum",
-    "the", "and", "a", "of", "in", "is", "to", "was", "for", "are", "with",
-  ]);
 
-  const posWords: Record<string, number> = {};
-  const negWords: Record<string, number> = {};
-
-  rows.forEach((r) => {
-    if (!r.result) return;
-    const words = r.ulasan
-      .toLowerCase()
-      .replace(/[^a-z\s]/g, " ")
-      .split(/\s+/)
-      .filter((w) => w.length > 3 && !stopwords.has(w));
-
-    words.forEach((w) => {
-      if (r.result!.sentimen === "POSITIF") {
-        posWords[w] = (posWords[w] ?? 0) + 1;
-      } else if (r.result!.sentimen === "NEGATIF") {
-        negWords[w] = (negWords[w] ?? 0) + 1;
-      }
-    });
-  });
-
-  const toArr = (obj: Record<string, number>): KeywordData[] =>
-    Object.entries(obj)
-      .map(([word, count]) => ({ word, count, sentiment: "positif" as const }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 15);
-
-  return {
-    positive: toArr(posWords).map((k) => ({ ...k, sentiment: "positif" })),
-    negative: toArr(negWords).map((k) => ({ ...k, sentiment: "negatif" })),
-  };
-}
 
 export function Dashboard({ rows }: Props) {
   const analyzed = rows.filter((r) => r.result);
@@ -163,7 +123,7 @@ export function Dashboard({ rows }: Props) {
       .map(([date, v]) => ({ date, ...v }));
   }
 
-  const keywords = computeKeywords(analyzed);
+
 
   return (
     <div className="space-y-6">
@@ -265,57 +225,6 @@ export function Dashboard({ rows }: Props) {
               <Line type="monotone" dataKey="negatif" name="Negatif" stroke={SENTIMENT_COLORS.NEGATIF} strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* Keywords */}
-      {(keywords.positive.length > 0 || keywords.negative.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h3 className="font-bold text-gray-800 mb-4 text-sm flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-              Kata Kunci Ulasan Positif
-            </h3>
-            {keywords.positive.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {keywords.positive.map((k) => (
-                  <span
-                    key={k.word}
-                    className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-100"
-                    style={{ fontSize: `${Math.max(10, Math.min(16, 10 + k.count * 1.5))}px` }}
-                  >
-                    {k.word}
-                    <span className="ml-1 text-emerald-400 text-xs">({k.count})</span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">Tidak ada data</p>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h3 className="font-bold text-gray-800 mb-4 text-sm flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />
-              Kata Kunci Ulasan Negatif
-            </h3>
-            {keywords.negative.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {keywords.negative.map((k) => (
-                  <span
-                    key={k.word}
-                    className="px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-medium border border-red-100"
-                    style={{ fontSize: `${Math.max(10, Math.min(16, 10 + k.count * 1.5))}px` }}
-                  >
-                    {k.word}
-                    <span className="ml-1 text-red-300 text-xs">({k.count})</span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">Tidak ada data</p>
-            )}
-          </div>
         </div>
       )}
     </div>
