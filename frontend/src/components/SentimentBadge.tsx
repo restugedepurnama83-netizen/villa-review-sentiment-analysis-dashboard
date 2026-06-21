@@ -8,6 +8,7 @@ interface Props {
 const config: Record<Sentiment, { label: string; classes: string }> = {
   POSITIF: { label: "POSITIF", classes: "bg-emerald-100 text-emerald-700 border border-emerald-200" },
   NEGATIF: { label: "NEGATIF", classes: "bg-red-100 text-red-700 border border-red-200" },
+  "TIDAK TERIDENTIFIKASI": { label: "TIDAK TERIDENTIFIKASI", classes: "bg-gray-100 text-gray-500 border border-gray-200" },
 };
 
 const sizeClasses = {

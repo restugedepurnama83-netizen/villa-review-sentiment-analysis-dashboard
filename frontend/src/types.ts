@@ -1,5 +1,4 @@
-export type Sentiment = "POSITIF" | "NEGATIF";
-
+export type Sentiment = "POSITIF" | "NEGATIF" | "TIDAK TERIDENTIFIKASI";
 export type Aspect = "kebersihan" | "fasilitas" | "pelayanan" | "lokasi" | "harga" | "suasana" | "lainnya";
 
 export interface AnalysisResult {
