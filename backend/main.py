@@ -1,7 +1,3 @@
-print("=== MARKER_DEBUG_V2 main.py LOADED ===")
-import hashlib
-
-import config
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from inference import (
@@ -26,48 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/debuggg")
-async def debuggg():
-    return {"status": "endpoint ini hidup"}
-
-
 # Load model & tokenizer sekali saat startup
 model, tokenizer = load_model_and_tokenizer()
-
-
-@app.get("/debug-tokenizer")
-async def debug_tokenizer():
-    test_word = "afsdfasdfasdfasdf"
-
-    # Hash file tokenizer.pkl yang AKTUAL di-load di production
-    with open(config.TOKENIZER_PATH, "rb") as f:
-        file_bytes = f.read()
-    file_hash = hashlib.md5(file_bytes).hexdigest()
-    file_size = len(file_bytes)
-
-    # Import preprocess & cek_oov_ratio dari preprocessing.py yang AKTUAL berjalan
-    from preprocessing import cek_oov_ratio, preprocess
-
-    cleaned = preprocess(test_word)
-    tokens = cleaned.split()
-    oov_ratio = cek_oov_ratio(cleaned, tokenizer)
-
-    return {
-        "tokenizer_path": config.TOKENIZER_PATH,
-        "tokenizer_file_md5": file_hash,
-        "tokenizer_file_size_bytes": file_size,
-        "total_word_index": len(tokenizer.word_index),
-        "num_words_setting": getattr(tokenizer, "num_words", None),
-        "oov_token": getattr(tokenizer, "oov_token", None),
-        "oov_threshold_config": config.OOV_THRESHOLD,
-        "test_input": test_word,
-        "cleaned_after_preprocess": cleaned,
-        "tokens": tokens,
-        "tokens_in_vocab": {tok: (tok in tokenizer.word_index) for tok in tokens},
-        "computed_oov_ratio": oov_ratio,
-        "should_be_rejected": oov_ratio >= config.OOV_THRESHOLD,
-    }
 
 
 # Endpoint prediksi
