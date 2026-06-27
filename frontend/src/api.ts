@@ -1,6 +1,7 @@
 import { AnalysisResult } from "./types";
 
-const API_BASE = "https://villa-sentiment-analyzer-production.up.railway.app";
+const API_BASE =
+  "https://villa-sentiment-analysis-dashboard-production.up.railway.app";
 
 export async function analyzeSentiment(
   review: string,
