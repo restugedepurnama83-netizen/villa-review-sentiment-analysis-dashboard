@@ -26,11 +26,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/debuggg")
+async def debuggg():
+    return {"status": "endpoint ini hidup"}
+
+
 # Load model & tokenizer sekali saat startup
 model, tokenizer = load_model_and_tokenizer()
 
 
-@app.get("/debuggg")
+@app.get("/debug-tokenizer")
 async def debug_tokenizer():
     test_word = "afsdfasdfasdfasdf"
 
