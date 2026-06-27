@@ -1,3 +1,4 @@
+print("=== MARKER_DEBUG_V2 main.py LOADED ===")
 import hashlib
 
 import config
