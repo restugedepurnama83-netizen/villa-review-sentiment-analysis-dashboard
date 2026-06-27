@@ -30,7 +30,7 @@ app.add_middleware(
 model, tokenizer = load_model_and_tokenizer()
 
 
-@app.get("/debug-tokenizer")
+@app.get("/debuggg")
 async def debug_tokenizer():
     test_word = "afsdfasdfasdfasdf"
 
