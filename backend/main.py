@@ -1,3 +1,6 @@
+import hashlib
+
+import config
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from inference import (
@@ -24,23 +27,6 @@ app.add_middleware(
 
 # Load model & tokenizer sekali saat startup
 model, tokenizer = load_model_and_tokenizer()
-
-"""
-TEMPORARY DEBUG ENDPOINT
-========================
-Tambahkan kode ini ke main.py kamu (di Railway), commit, push, lalu akses:
-GET https://villa-sentiment-analyzer-production.up.railway.app/debug-tokenizer
-
-SETELAH masalah ketemu, HAPUS endpoint ini dan deploy ulang —
-jangan biarkan endpoint debug seperti ini permanen di production.
-"""
-
-# Tambahkan import ini di bagian atas main.py (dekat import lainnya):
-import hashlib
-
-import config
-
-# Tambahkan endpoint ini di main.py, di mana saja setelah `model, tokenizer = load_model_and_tokenizer()`:
 
 
 @app.get("/debug-tokenizer")
